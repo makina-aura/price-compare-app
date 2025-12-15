@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}登録履歴{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title">登録履歴</h2>
+
+<div class="card">
+  <table class="price-table">
+    <tr>
+      <th>商品名</th>
+      <th>店名</th>
+      <th>金額</th>
+      <th>操作</th>
+    </tr>
+
+    {% if histories is defined %}
+      {% for item in histories %}
+        <tr>
+          <td>{{ item.product_name }}</td>
+          <td>{{ item.store_name }}</td>
+          <td>{{ item.price }}円</td>
+          <td>
+            <button class="btn danger">削除</button>
+          </td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+
+  </table>
+</div>
+
+<a href="/dashboard" class="btn">← ダッシュボードへ戻る</a>
+
+{% endblock %}

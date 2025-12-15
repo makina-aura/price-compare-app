@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}ダッシュボード{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title">ダッシュボード</h2>
+
+<div class="card center">
+  <p class="welcome">ようこそ ○○さん</p>
+</div>
+
+<div class="card">
+  <a href="/add" class="btn primary">商品を登録する</a>
+</div>
+
+<div class="card">
+  <a href="/compare" class="btn primary">価格を比較する</a>
+</div>
+
+<hr class="divider">
+
+<div class="card">
+  <a href="/logout" class="btn danger">ログアウト</a>
+</div>
+
+{% endblock %}

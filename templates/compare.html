@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}価格比較{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title">価格比較</h2>
+
+<!-- 商品選択 -->
+<div class="card">
+  <form method="get" action="/compare">
+    <label for="product">商品名を選ぶ</label>
+    <select name="product_id" class="select" onchange="this.form.submit()">
+      <option value="">選択してください</option>
+
+      {% if products is defined %}
+        {% for product in products %}
+          <option value="{{ product.id }}"
+            {% if selected_product_id is defined and product.id == selected_product_id %}
+              selected
+            {% endif %}>
+            {{ product.name }}
+          </option>
+        {% endfor %}
+      {% endif %}
+
+    </select>
+  </form>
+</div>
+
+<!-- 比較結果 -->
+{% if prices is defined and prices %}
+
+<div class="card">
+  <table class="price-table">
+    <tr>
+      <th>店名</th>
+      <th>価格</th>
+      <th>差分</th>
+    </tr>
+
+    {% for row in prices %}
+      <tr {% if row.is_cheapest %}class="best"{% endif %}>
+        <td>{{ row.store_name }}</td>
+        <td>{{ row.price }}円</td>
+        <td>
+          {% if row.is_cheapest %}
+            最安！
+          {% else %}
+            +{{ row.diff }}円
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+
+  </table>
+</div>
+
+<div class="card highlight">
+  <p>一番お得！</p>
+  <strong>
+    {{ cheapest.store_name }}で買うと<br>
+    最大{{ max_diff }}円お得！
+  </strong>
+</div>
+
+{% else %}
+
+<div class="card">
+  <p>商品を選択すると価格を比較できます</p>
+</div>
+
+{% endif %}
+
+<!-- 累計 -->
+<div class="card total">
+  <p>★ 累計の得した金額 ★</p>
+  <strong>
+    {% if total_saved is defined %}
+      {{ total_saved }}円
+    {% else %}
+      0円
+    {% endif %}
+  </strong>
+</div>
+
+<a href="/dashboard" class="btn">← ダッシュボードへ戻る</a>
+
+{% endblock %}

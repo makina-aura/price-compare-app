@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}価格比較アプリ{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="header">
+  <h1 class="app-title">価格比較</h1>
+</header>
+
+<nav class="nav">
+  <a href="/dashboard">🏠</a>
+  <a href="/compare" class="active">🔍</a>
+  <a href="/history">📚</a>
+  <a href="/logout">🚪</a>
+</nav>
+
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

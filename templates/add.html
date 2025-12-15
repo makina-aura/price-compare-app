@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}商品登録{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title">商品登録</h2>
+
+<div class="card">
+  <form method="post" action="/add">
+
+    <label for="product_name">商品名</label>
+    <input type="text" id="product_name" name="product_name" class="input">
+
+    <label for="store_name">店名</label>
+    <input type="text" id="store_name" name="store_name" class="input">
+
+    <label for="price">金額（円）</label>
+    <input type="number" id="price" name="price" class="input">
+
+    <button type="submit" class="btn primary">
+      登録する
+    </button>
+
+  </form>
+</div>
+
+<a href="/dashboard" class="btn">← ダッシュボードへ戻る</a>
+
+{% endblock %}
