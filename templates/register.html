@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>会員登録</title>
+</head>
+<body>
+  <h2>会員登録</h2>
+
+  <form method="post" action="/register">
+    <div>
+      <label>ニックネーム</label><br>
+      <input type="text" name="nickname" required>
+    </div>
+
+    <div style="margin-top:10px;">
+      <label>メールアドレス</label><br>
+      <input type="email" name="email" required>
+    </div>
+
+    <div style="margin-top:10px;">
+      <label>パスワード</label><br>
+      <input type="password" name="password" required>
+    </div>
+
+    <div style="margin-top:15px;">
+      <button type="submit">登録する</button>
+    </div>
+  </form>
+
+  <div style="margin-top:20px;">
+    <p>すでにアカウントをお持ちの方</p>
+    <a href="/login">→ ログイン</a>
+  </div>
+</body>
+</html>
