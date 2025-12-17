@@ -103,8 +103,11 @@ body {
 }
 
 .welcome {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #555;
+  letter-spacing: 0.04em;
+  margin-top: 8px;
 }
 
 .divider {
