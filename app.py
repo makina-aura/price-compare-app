@@ -35,8 +35,9 @@ def add():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        return "登録完了（仮）"
+        return redirect(url_for("dashboard"))
     return render_template("register.html")
+
 
 @app.route("/history")
 def history():
