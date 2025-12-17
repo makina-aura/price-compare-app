@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 
 app = Flask(__name__)
@@ -7,6 +7,12 @@ def get_db_connection():
     conn = sqlite3.connect("db/comparison_app.db")
     conn.row_factory = sqlite3.Row
     return conn
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        return redirect(url_for("dashboard"))
+    return render_template("login.html")
 
 @app.route("/dashboard")
 def dashboard():
