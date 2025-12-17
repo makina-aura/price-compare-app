@@ -9,15 +9,19 @@
 <body>
 
 <header class="header">
-  <h1 class="app-title">価格比較</h1>
+  <h1 class="app-title">くらベルン</h1>
 </header>
 
 <nav class="nav">
-  <a href="/dashboard">🏠</a>
-  <a href="/compare" class="active">🔍</a>
-  <a href="/history">📚</a>
-  <a href="/logout">🚪</a>
+  <a href="/dashboard">🏡<span>ダッシュボード</span></a>
+  <a href="/compare">⚖️<span>価格比較</span></a>
+  <a href="/add">📝<span>商品登録</span></a>
+  <a href="/history">🕘<span>履歴</span></a>
+  {% if session.get("logged_in") %}
+    <a href="/logout" class="logout">🚪<span>ログアウト</span></a>
+  {% endif %}
 </nav>
+
 
 <main class="container">
   {% block content %}{% endblock %}
