@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+  <div class="card center">
+    <h2>毎日の買い物で</h2>
+    <p class="subtitle">
+      「どれだけ得したか」が<br>
+      ひと目でわかる
+    </p>
+  </div>
+
+  <div class="card">
+    <a href="/login" class="btn primary">ログイン</a>
+  </div>
+
+  <div class="card">
+    <a href="/register" class="btn secondary">会員登録（無料）</a>
+  </div>
+
+  <div class="card info">
+    <p>※ 会員登録するとできること</p>
+    <ul>
+      <li>商品価格を登録</li>
+      <li>最安値を自動比較</li>
+      <li>得した金額を累計表示</li>
+    </ul>
+  </div>
+
+</div>
+{% endblock %}
