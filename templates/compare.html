@@ -4,7 +4,8 @@
 
 {% block content %}
 
-<h2 class="page-title">価格比較</h2>
+<h2 class="page-title">価格比較（{{ today }}）</h2>
+
 
 <!-- 商品選択 -->
 <div class="card">
@@ -41,7 +42,13 @@
 
     {% for row in prices %}
       <tr {% if row.is_cheapest %}class="best"{% endif %}>
-        <td>{{ row.store_name }}</td>
+       <td>
+  <a href="/favorite/{{ row.price_id }}">
+    {% if row.is_favorite %}★{% else %}☆{% endif %}
+    {{ row.store_name }}
+  </a>
+</td>
+
         <td>{{ row.price }}円</td>
         <td>
           {% if row.is_cheapest %}
@@ -74,7 +81,7 @@
 
 <!-- 累計 -->
 <div class="card total">
-  <p>★ 累計の得した金額 ★</p>
+  <p>★ １ヶ月（月初から月末）の得した金額累計 ★</p>
   <strong>
     {% if total_saved is defined %}
       {{ total_saved }}円
