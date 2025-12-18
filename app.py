@@ -102,15 +102,148 @@ def dashboard():
 # --------------------
 @app.route("/compare")
 def compare():
-    return render_template("compare.html")
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+
+    # 商品一覧（プルダウン用）
+    products = conn.execute(
+        "SELECT id, name FROM items ORDER BY name"
+    ).fetchall()
+
+    product_id = request.args.get("product_id")
+    prices = None
+    cheapest = None
+    max_diff = 0
+
+    if product_id:
+        rows = conn.execute(
+            """
+            SELECT
+                s.name AS store_name,
+                p.price
+            FROM prices p
+            JOIN stores s ON p.store_id = s.id
+            WHERE p.item_id = ?
+            ORDER BY p.price
+            """,
+            (product_id,)
+        ).fetchall()
+
+        if rows:
+            min_price = rows[0]["price"]
+            prices = []
+
+            for r in rows:
+                diff = r["price"] - min_price
+                prices.append({
+                    "store_name": r["store_name"],
+                    "price": r["price"],
+                    "diff": diff,
+                    "is_cheapest": diff == 0
+                })
+
+            cheapest = prices[0]
+            max_diff = prices[-1]["price"] - min_price
+
+    conn.close()
+
+    return render_template(
+        "compare.html",
+        products=products,
+        prices=prices,
+        selected_product_id=int(product_id) if product_id else None,
+        cheapest=cheapest,
+        max_diff=max_diff
+    )
+
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        item_name = request.form["item_name"]
+        shop_name = request.form["shop_name"]
+        price = int(request.form["price"])
+        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        conn = get_db_connection()
+
+        # --- 商品 ---
+        item = conn.execute(
+            "SELECT id FROM items WHERE name = ?",
+            (item_name,)
+        ).fetchone()
+
+        if item:
+            item_id = item["id"]
+        else:
+            cur = conn.execute(
+                "INSERT INTO items (name) VALUES (?)",
+                (item_name,)
+            )
+            item_id = cur.lastrowid
+
+        # --- 店舗 ---
+        store = conn.execute(
+            "SELECT id FROM stores WHERE name = ?",
+            (shop_name,)
+        ).fetchone()
+
+        if store:
+            store_id = store["id"]
+        else:
+            cur = conn.execute(
+                "INSERT INTO stores (name) VALUES (?)",
+                (shop_name,)
+            )
+            store_id = cur.lastrowid
+
+        # --- 価格 ---
+        conn.execute(
+            """
+            INSERT INTO prices (item_id, store_id, price, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (item_id, store_id, price, created_at)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("history"))
+
     return render_template("add.html")
+
 
 @app.route("/history")
 def history():
-    return render_template("history.html")
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+
+    rows = conn.execute(
+        """
+        SELECT
+            i.name AS item_name,
+            s.name AS shop_name,
+            p.price,
+            p.created_at
+        FROM prices p
+        JOIN items i ON p.item_id = i.id
+        JOIN stores s ON p.store_id = s.id
+        ORDER BY p.created_at DESC
+        """
+    ).fetchall()
+
+    conn.close()
+
+    return render_template("history.html", rows=rows)
+
 
 @app.route("/logout")
 def logout():
