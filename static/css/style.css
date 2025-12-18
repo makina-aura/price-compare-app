@@ -131,4 +131,129 @@ body {
   font-weight: 700;
 }
 
+/* ===== auth pages only (login / register) ===== */
 
+/* ログイン・登録フォーム共通 */
+form[action="/login"],
+form[action="/register"] {
+  max-width: 360px;
+  margin: 20px auto;
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/* タイトル（ログイン・登録のみ） */
+form[action="/login"] h2,
+form[action="/register"] h2 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* 入力ブロック */
+form[action="/login"] div,
+form[action="/register"] div {
+  margin-bottom: 12px;
+}
+
+/* ラベル */
+form[action="/login"] label,
+form[action="/register"] label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+/* 入力欄 */
+form[action="/login"] input[type="text"],
+form[action="/login"] input[type="email"],
+form[action="/login"] input[type="password"],
+form[action="/register"] input[type="text"],
+form[action="/register"] input[type="email"],
+form[action="/register"] input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* ボタン */
+form[action="/login"] button,
+form[action="/register"] button {
+  width: 100%;
+  padding: 10px;
+  background: #4a6cf7;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+/* 下の案内テキスト */
+form[action="/login"] + p,
+form[action="/register"] + p {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* ログイン・登録画面内リンク */
+form[action="/login"] a,
+form[action="/register"] a {
+  color: #4a6cf7;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* ===== auth pages final tuning ===== */
+
+/* label と input を1セットに見せる */
+form[action="/login"] label,
+form[action="/register"] label {
+  margin-bottom: 2px;   /* ラベル下を詰める */
+}
+
+/* input 同士の間隔を詰める */
+form[action="/login"] input,
+form[action="/register"] input {
+  margin-bottom: 10px;  /* 箱と箱の距離 */
+  font-size: 17px;      /* 文字を少し大きく */
+}
+
+/* 最後の input の下だけ余白を少し広めに */
+form[action="/login"] input:last-of-type,
+form[action="/register"] input:last-of-type {
+  margin-bottom: 16px;
+}
+
+/* ボタン文字も少し大きく */
+form[action="/login"] button,
+form[action="/register"] button {
+  font-size: 17px;
+}
+/* auth pages readability */
+form[action="/login"] input,
+form[action="/register"] input {
+  font-size: 17px;
+}
+
+form[action="/login"] label,
+form[action="/register"] label {
+  font-size: 0.95rem;
+}
+
+/* ===== 商品登録ページ調整 ===== */
+
+/* 商品登録フォーム内の各行に余白をつける */
+form[action="/add"] > div {
+  margin-bottom: 16px;
+}
+
+/* 登録ボタンだけ下に余白 */
+form[action="/add"] button {
+  margin-top: 12px;
+}
+
+/* 横並び入力欄が詰まりすぎないように */
+form[action="/add"] input {
+  margin-right: 8px;
+}
