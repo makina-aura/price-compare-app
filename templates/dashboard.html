@@ -7,8 +7,17 @@
 <h2 class="page-title">ダッシュボード</h2>
 
 <div class="card center">
-  <p class="welcome">ようこそ ○○さん</p>
+  <p class="welcome">
+    {% if nickname %}
+      ようこそ {{ nickname }} さん
+    {% else %}
+      ようこそ
+    {% endif %}
+  </p>
 </div>
+
+<!-- TODO: app.py から nickname を渡す想定 -->
+
 
 <div class="card">
   <a href="/add" class="btn primary">商品を登録する</a>
