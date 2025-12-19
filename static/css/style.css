@@ -257,3 +257,24 @@ form[action="/add"] button {
 form[action="/add"] input {
   margin-right: 8px;
 }
+
+/* ログインエラースタイル */
+.login-fail {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+  color: #444;
+}
+
+.login-fail .icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.login-fail .message {
+  font-size: 24px;
+  color: #d9534f;
+}
