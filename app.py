@@ -358,19 +358,27 @@ def history():
     rows = conn.execute(
         """
         SELECT
+            p.id AS price_id,
             i.name AS item_name,
             s.name AS shop_name,
             p.price,
-            p.created_at
+            p.created_at,
+            CASE
+                WHEN f.price_id IS NOT NULL THEN 1
+                ELSE 0
+            END AS is_favorite
         FROM prices p
         JOIN items i ON p.item_id = i.id
         JOIN stores s ON p.store_id = s.id
+        LEFT JOIN favorites f ON f.price_id = p.id
         ORDER BY p.created_at DESC
         """
     ).fetchall()
     conn.close()
 
     return render_template("history.html", rows=rows)
+
+
 
 
 # --------------------

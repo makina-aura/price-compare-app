@@ -4,32 +4,53 @@
 
 {% block content %}
 
-<h2 class="page-title">価格比較（{{ today }}）</h2>
+<h2 align="center">価格比較（{{ today }}）</h2>
 
+<!-- ===== 商品選択エリア ===== -->
+<div align="center">
 
-<!-- 商品選択 -->
-<div class="card">
+  <p>商品名を選ぶ</p>
+
   <form method="get" action="/compare">
-    <label for="product">商品名を選ぶ</label>
-    <select name="product_id" class="select" onchange="this.form.submit()">
+
+  <font size="5">
+    <select name="product_id">
       <option value="">選択してください</option>
-
-      {% if products is defined %}
-        {% for product in products %}
-          <option value="{{ product.id }}"
-            {% if selected_product_id is defined and product.id == selected_product_id %}
-              selected
-            {% endif %}>
-            {{ product.name }}
-          </option>
-        {% endfor %}
-      {% endif %}
-
+      {% for product in products %}
+        <option value="{{ product.id }}"
+          {% if selected_product_id == product.id %}selected{% endif %}
+        >
+          {{ product.name }}
+        </option>
+      {% endfor %}
     </select>
-  </form>
+  </font>
+
+  <br><br>
+  <button type="submit">比較する</button>
+</form>
+
+
 </div>
 
-<!-- 比較結果 -->
+<br>
+
+<!-- ===== 比較結果 ===== -->
+
+<!-- 商品未選択時：中央メッセージ -->
+{% if prices is not defined or not prices %}
+<div class="card">
+  <table align="center" width="100%" cellpadding="12">
+    <tr>
+      <td align="center">
+        商品を選択すると価格を比較できます
+      </td>
+    </tr>
+  </table>
+</div>
+{% endif %}
+
+<!-- 商品選択時：価格比較テーブル -->
 {% if prices is defined and prices %}
 
 <div class="card">
@@ -41,65 +62,51 @@
     </tr>
 
     {% for row in prices %}
-      <tr {% if row.is_cheapest %}class="best"{% endif %}>
-       
-<td style="text-align:center; position:relative;">
+    <tr {% if row.is_cheapest %}class="best"{% endif %}>
 
-  <!-- ★＋店名（列中央＝見出し真下） -->
-  <a href="/favorite/{{ row.price_id }}" style="display:inline-block;">
-    {% if row.is_favorite %}★{% else %}☆{% endif %}
-    {{ row.store_name }}
-  </a>
+      <td style="text-align:center; position:relative;">
 
-  <!-- 削除ボタン（店名と価格の間） -->
-  <form method="post"
-        action="/delete_price/{{ row.price_id }}"
-        onsubmit="return confirm('この行を削除しますか？');"
-        style="
-          position:absolute;
-          right:-45px;
-          top:50%;
-          transform:translateY(-50%);
-          margin:0;
-        ">
-    <button type="submit">削除</button>
-  </form>
+        <!-- ★＋店名 -->
+        <a href="/favorite/{{ row.price_id }}">
+          {% if row.is_favorite %}★{% else %}☆{% endif %}
+          {{ row.store_name }}
+        </a>
 
-</td>
+        <!-- 削除ボタン -->
+        <form method="post"
+              action="/delete_price/{{ row.price_id }}"
+              onsubmit="return confirm('この行を削除しますか？');"
+              style="
+                position:absolute;
+                right:-45px;
+                top:50%;
+                transform:translateY(-50%);
+                margin:0;
+              ">
+          <button type="submit">削除</button>
+        </form>
 
+      </td>
 
+      <td align="center">{{ row.price }}円</td>
 
+      <td align="center">
+        {% if row.is_cheapest %}
+          <strong>最安！｜最大{{ max_diff }}円お得</strong>
+        {% else %}
+          +{{ row.diff }}円
+        {% endif %}
+      </td>
 
-
-
-
-        <td>{{ row.price }}円</td>
-        <td>
-  {% if row.is_cheapest %}
-    <strong>
-      最安！｜最大{{ max_diff }}円お得
-    </strong>
-  {% else %}
-    +{{ row.diff }}円
-  {% endif %}
-</td>
-
-      </tr>
+    </tr>
     {% endfor %}
 
   </table>
 </div>
 
-
-
-{% else %}
-
-<div class="card">
-  <p>商品を選択すると価格を比較できます</p>
-</div>
-
 {% endif %}
 
+<!-- ===== 今日の合計 ===== -->
 <div class="card total">
   <p>★ 今日の得した金額 ★</p>
   <strong>
@@ -111,7 +118,7 @@
   </strong>
 </div>
 
-<!-- 累計 -->
+<!-- ===== 月間累計 ===== -->
 <div class="card total">
   <p>★ １ヶ月（月初から月末）の得した金額累計 ★</p>
   <strong>

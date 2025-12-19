@@ -4,26 +4,46 @@
 
 {% block content %}
 
-<h2 class="page-title">登録履歴</h2>
+<h2 align="center">登録履歴</h2>
 
-<table>
+<table
+  align="center"
+  border="1"
+  cellpadding="12"
+  cellspacing="0"
+  width="90%"
+>
   <tr>
-    <th>商品名</th>
-    <th>店名</th>
-    <th>価格</th>
-    <th>登録日</th>
+    <th align="center">商品名</th>
+    <th align="center">店名</th>
+    <th align="center">価格</th>
+    <th align="center">登録日</th>
+    <th align="center">操作</th>
   </tr>
 
   {% for row in rows %}
-  <tr>
-    <td>{{ row.item_name }}</td>
-    <td>{{ row.shop_name }}</td>
-    <td>{{ row.price }} 円</td>
-    <td>{{ row.created_at }}</td>
+  <tr {% if row.is_favorite %} bgcolor="#e8ecff" {% endif %}>
+    <td align="center">{{ row.item_name }}</td>
+    <td align="center">{{ row.shop_name }}</td>
+    <td align="center">{{ row.price }} 円</td>
+    <td align="center">{{ row.created_at }}</td>
+    <td align="center">
+      <form
+        method="post"
+        action="{{ url_for('delete_price', price_id=row.price_id) }}"
+        style="margin:0;"
+      >
+        <button type="submit">削除</button>
+      </form>
+    </td>
   </tr>
   {% endfor %}
 </table>
 
-<a href="/add" class="btn">← 商品登録へ</a>
+<br>
+
+<div align="center">
+  <a href="/add" class="btn">← 商品登録へ</a>
+</div>
 
 {% endblock %}
