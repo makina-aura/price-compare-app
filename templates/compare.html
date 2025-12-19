@@ -42,12 +42,20 @@
 
     {% for row in prices %}
       <tr {% if row.is_cheapest %}class="best"{% endif %}>
-       <td>
+       
+ <td>
   <a href="/favorite/{{ row.price_id }}">
     {% if row.is_favorite %}★{% else %}☆{% endif %}
     {{ row.store_name }}
   </a>
+
+  <!-- 削除ボタン（列は増やさず、店名セル内に追加） -->
+  <form method="post" action="/delete_price/{{ row.price_id }}" style="display:inline;">
+    <button type="submit" onclick="return confirm('この行を削除しますか？');">削除</button>
+  </form>
 </td>
+
+
 
         <td>{{ row.price }}円</td>
         <td>

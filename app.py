@@ -273,6 +273,56 @@ def favorite(price_id):
 
     return redirect(request.referrer or url_for("compare"))
 
+# --------------------
+# 価格行の削除（compareの店名・価格・差分の1行を消す）
+# --------------------
+@app.route("/delete_price/<int:price_id>", methods=["POST"])
+def delete_price(price_id):
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+
+    # まず対象が存在するか確認（ついでに item_id を取る：後で掃除に使える）
+    row = conn.execute(
+        "SELECT item_id, store_id FROM prices WHERE id = ?",
+        (price_id,)
+    ).fetchone()
+
+    if not row:
+        conn.close()
+        return redirect(request.referrer or url_for("compare"))
+
+    item_id = row["item_id"]
+    store_id = row["store_id"]
+
+    # ★が付いていた場合に備えて favorites を先に消す（外部キーがなくても安全）
+    conn.execute("DELETE FROM favorites WHERE price_id = ?", (price_id,))
+
+    # prices を削除（これが「店名・価格・差分」の1行）
+    conn.execute("DELETE FROM prices WHERE id = ?", (price_id,))
+
+    # （任意）その item に紐づく prices が0件なら items を消す
+    remain_item = conn.execute(
+        "SELECT 1 FROM prices WHERE item_id = ? LIMIT 1",
+        (item_id,)
+    ).fetchone()
+    if not remain_item:
+        conn.execute("DELETE FROM items WHERE id = ?", (item_id,))
+
+    # （任意）その store に紐づく prices が0件なら stores を消す
+    remain_store = conn.execute(
+        "SELECT 1 FROM prices WHERE store_id = ? LIMIT 1",
+        (store_id,)
+    ).fetchone()
+    if not remain_store:
+        conn.execute("DELETE FROM stores WHERE id = ?", (store_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(request.referrer or url_for("compare"))
+
 
 # --------------------
 # 商品追加
@@ -346,7 +396,8 @@ def history():
         """
     ).fetchall()
     conn.close()
-    
+
+
 
     return render_template("history.html", rows=rows)
 
