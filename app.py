@@ -43,15 +43,13 @@ def register():
             INSERT INTO users (username, password_hash, created_at, email)
             VALUES (?, ?, ?, ?)
             """,
-            (username, email, password_hash, created_at)
+            (username, password_hash, created_at, email)
         )
         conn.commit()
         conn.close()
 
-        # 登録と同時にログイン状態にする
         session["logged_in"] = True
         session["username"] = username
-
         return redirect(url_for("dashboard"))
 
     return render_template("register.html")
@@ -98,7 +96,7 @@ def dashboard():
 
 
 # --------------------
-# その他
+# 価格比較
 # --------------------
 @app.route("/compare")
 def compare():
@@ -107,20 +105,16 @@ def compare():
 
     conn = get_db_connection()
 
-    # --------------------
     # 日付計算
-    # --------------------
     today = date.today()
     month_start = today.replace(day=1)
     next_month = (month_start + timedelta(days=32)).replace(day=1)
     month_end = next_month - timedelta(days=1)
 
-    today_start = datetime.now().strftime("%Y-%m-%d 00:00:00")
-    today_end   = datetime.now().strftime("%Y-%m-%d 23:59:59")
+    today_start = today.strftime("%Y-%m-%d 00:00:00")
+    today_end = today.strftime("%Y-%m-%d 23:59:59")
 
-    # --------------------
-    # 今日登録した商品のみ表示
-    # --------------------
+    # 今日登録された商品のみ
     products = conn.execute(
         """
         SELECT DISTINCT i.id, i.name
@@ -139,40 +133,8 @@ def compare():
     max_diff = 0
 
     # --------------------
-    # 月間の得した金額（商品未選択時）
+    # 商品選択時
     # --------------------
-    total_saved_month = conn.execute(
-        """
-        WITH base AS (
-          SELECT
-            p.item_id,
-            p.price,
-            (
-              SELECT MIN(p2.price)
-              FROM prices p2
-              WHERE p2.item_id = p.item_id
-                AND p2.created_at BETWEEN ? AND ?
-            ) AS min_price
-          FROM prices p
-          JOIN favorites f ON f.price_id = p.id
-          WHERE f.created_at BETWEEN ? AND ?
-        )
-        SELECT COALESCE(SUM(price - min_price), 0) AS total
-        FROM base
-        """,
-        (
-            month_start.strftime("%Y-%m-%d 00:00:00"),
-            month_end.strftime("%Y-%m-%d 23:59:59"),
-            month_start.strftime("%Y-%m-%d 00:00:00"),
-            month_end.strftime("%Y-%m-%d 23:59:59"),
-        )
-    ).fetchone()["total"]
-
-    # --------------------
-    # 商品選択時の処理
-    # --------------------
-    total_saved_today = 0
-
     if product_id:
         rows = conn.execute(
             """
@@ -186,51 +148,66 @@ def compare():
             FROM prices p
             JOIN stores s ON p.store_id = s.id
             WHERE p.item_id = ?
-            ORDER BY p.price
             """,
             (product_id,)
         ).fetchall()
 
         if rows:
-            min_price = rows[0]["price"]
+            max_price = max(r["price"] for r in rows)
+
             prices = []
+            favorite_price = None
+            favorite_store = None
 
             for r in rows:
-                diff = r["price"] - min_price
+                if r["is_favorite"]:
+                    favorite_price = r["price"]
+                    favorite_store = r["store_name"]
+
                 prices.append({
                     "price_id": r["price_id"],
                     "store_name": r["store_name"],
                     "price": r["price"],
-                    "diff": diff,
-                    "is_cheapest": diff == 0,
+                    "diff": max_price - r["price"],
                     "is_favorite": bool(r["is_favorite"])
                 })
 
-            cheapest = prices[0]
-            max_diff = prices[-1]["price"] - min_price
+            if favorite_price is not None:
+                max_diff = max_price - favorite_price
+                cheapest = {"store_name": favorite_store}
+            else:
+                max_diff = 0
+                cheapest = None
 
-        # 今日の星付き差分合計
-        total_saved_today = conn.execute(
-            """
-            WITH base AS (
-              SELECT
-                p.item_id,
-                p.price,
-                (
-                  SELECT MIN(p2.price)
-                  FROM prices p2
-                  WHERE p2.item_id = p.item_id
-                    AND p2.created_at BETWEEN ? AND ?
-                ) AS min_price
-              FROM prices p
-              JOIN favorites f ON f.price_id = p.id
-              WHERE f.created_at BETWEEN ? AND ?
-            )
-            SELECT COALESCE(SUM(price - min_price), 0) AS total
-            FROM base
-            """,
-            (today_start, today_end, today_start, today_end)
-        ).fetchone()["total"]
+    # --------------------
+    # 月間累計
+    # --------------------
+    total_saved_month = conn.execute(
+        """
+        WITH fav AS (
+          SELECT
+            p.item_id,
+            p.price AS fav_price
+          FROM favorites f
+          JOIN prices p ON p.id = f.price_id
+          WHERE f.created_at BETWEEN ? AND ?
+        ),
+        maxp AS (
+          SELECT
+            item_id,
+            MAX(price) AS max_price
+          FROM prices
+          GROUP BY item_id
+        )
+        SELECT COALESCE(SUM(maxp.max_price - fav.fav_price), 0) AS total
+        FROM fav
+        JOIN maxp ON fav.item_id = maxp.item_id
+        """,
+        (
+            month_start.strftime("%Y-%m-%d 00:00:00"),
+            month_end.strftime("%Y-%m-%d 23:59:59"),
+        )
+    ).fetchone()["total"]
 
     conn.close()
 
@@ -242,10 +219,13 @@ def compare():
         selected_product_id=int(product_id) if product_id else None,
         cheapest=cheapest,
         max_diff=max_diff,
-        total_saved=(total_saved_today if product_id else total_saved_month)
+        total_saved=total_saved_month
     )
 
 
+# --------------------
+# ★選択（1商品1つ）
+# --------------------
 @app.route("/favorite/<int:price_id>")
 def favorite(price_id):
     if not session.get("logged_in"):
@@ -253,18 +233,25 @@ def favorite(price_id):
 
     conn = get_db_connection()
 
-    exists = conn.execute(
-        "SELECT 1 FROM favorites WHERE price_id = ?",
+    item_id = conn.execute(
+        "SELECT item_id FROM prices WHERE id = ?",
         (price_id,)
-    ).fetchone()
+    ).fetchone()["item_id"]
 
-    if exists:
-        conn.execute("DELETE FROM favorites WHERE price_id = ?", (price_id,))
-    else:
-        conn.execute(
-            "INSERT INTO favorites (price_id, created_at) VALUES (?, ?)",
-            (price_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    conn.execute(
+        """
+        DELETE FROM favorites
+        WHERE price_id IN (
+            SELECT id FROM prices WHERE item_id = ?
         )
+        """,
+        (item_id,)
+    )
+
+    conn.execute(
+        "INSERT INTO favorites (price_id, created_at) VALUES (?, ?)",
+        (price_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    )
 
     conn.commit()
     conn.close()
@@ -272,6 +259,9 @@ def favorite(price_id):
     return redirect(request.referrer or url_for("compare"))
 
 
+# --------------------
+# 商品登録
+# --------------------
 @app.route("/add", methods=["GET", "POST"])
 def add():
     if not session.get("logged_in"):
@@ -285,7 +275,6 @@ def add():
 
         conn = get_db_connection()
 
-        # --- 商品 ---
         item = conn.execute(
             "SELECT id FROM items WHERE name = ?",
             (item_name,)
@@ -300,7 +289,6 @@ def add():
             )
             item_id = cur.lastrowid
 
-        # --- 店舗 ---
         store = conn.execute(
             "SELECT id FROM stores WHERE name = ?",
             (shop_name,)
@@ -315,7 +303,6 @@ def add():
             )
             store_id = cur.lastrowid
 
-        # --- 価格 ---
         conn.execute(
             """
             INSERT INTO prices (item_id, store_id, price, created_at)
@@ -332,13 +319,15 @@ def add():
     return render_template("add.html")
 
 
+# --------------------
+# 履歴
+# --------------------
 @app.route("/history")
 def history():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
 
     conn = get_db_connection()
-
     rows = conn.execute(
         """
         SELECT
@@ -352,12 +341,14 @@ def history():
         ORDER BY p.created_at DESC
         """
     ).fetchall()
-
     conn.close()
 
     return render_template("history.html", rows=rows)
 
 
+# --------------------
+# ログアウト
+# --------------------
 @app.route("/logout")
 def logout():
     session.clear()
