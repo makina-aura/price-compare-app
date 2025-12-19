@@ -43,41 +43,54 @@
     {% for row in prices %}
       <tr {% if row.is_cheapest %}class="best"{% endif %}>
        
- <td>
-  <a href="/favorite/{{ row.price_id }}">
+<td style="text-align:center; position:relative;">
+
+  <!-- ★＋店名（列中央＝見出し真下） -->
+  <a href="/favorite/{{ row.price_id }}" style="display:inline-block;">
     {% if row.is_favorite %}★{% else %}☆{% endif %}
     {{ row.store_name }}
   </a>
 
-  <!-- 削除ボタン（列は増やさず、店名セル内に追加） -->
-  <form method="post" action="/delete_price/{{ row.price_id }}" style="display:inline;">
-    <button type="submit" onclick="return confirm('この行を削除しますか？');">削除</button>
+  <!-- 削除ボタン（店名と価格の間） -->
+  <form method="post"
+        action="/delete_price/{{ row.price_id }}"
+        onsubmit="return confirm('この行を削除しますか？');"
+        style="
+          position:absolute;
+          right:-45px;
+          top:50%;
+          transform:translateY(-50%);
+          margin:0;
+        ">
+    <button type="submit">削除</button>
   </form>
+
 </td>
+
+
+
+
 
 
 
         <td>{{ row.price }}円</td>
         <td>
-          {% if row.is_cheapest %}
-            最安！
-          {% else %}
-            +{{ row.diff }}円
-          {% endif %}
-        </td>
+  {% if row.is_cheapest %}
+    <strong>
+      最安！｜最大{{ max_diff }}円お得
+    </strong>
+  {% else %}
+    +{{ row.diff }}円
+  {% endif %}
+</td>
+
       </tr>
     {% endfor %}
 
   </table>
 </div>
 
-<div class="card highlight">
-  <p>一番お得！</p>
-  <strong>
-    {{ cheapest.store_name }}で買うと<br>
-    最大{{ max_diff }}円お得！
-  </strong>
-</div>
+
 
 {% else %}
 
@@ -86,6 +99,17 @@
 </div>
 
 {% endif %}
+
+<div class="card total">
+  <p>★ 今日の得した金額 ★</p>
+  <strong>
+    {% if total_saved_today is defined %}
+      {{ total_saved_today }}円
+    {% else %}
+      0円
+    {% endif %}
+  </strong>
+</div>
 
 <!-- 累計 -->
 <div class="card total">
