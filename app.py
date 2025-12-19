@@ -78,7 +78,7 @@ def login():
             session["username"] = user["username"]
             return redirect(url_for("dashboard"))
 
-        return "ログイン失敗"
+        return render_template("login_error.html")
 
     return render_template("login.html")
 
