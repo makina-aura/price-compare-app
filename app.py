@@ -346,6 +346,7 @@ def history():
         """
     ).fetchall()
     conn.close()
+    
 
     return render_template("history.html", rows=rows)
 
