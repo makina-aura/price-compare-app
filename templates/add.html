@@ -4,27 +4,41 @@
 
 {% block content %}
 
-<h2 class="page-title">商品登録</h2>
+<h2 align="center">商品登録</h2>
 
-<div class="card">
-  <form method="post" action="/add">
+<form method="post" action="/add">
 
-    <label for="item_name">商品名</label>
-    <input type="text" id="item_name" name="item_name" class="input" required>
+  <table align="center" cellpadding="10">
+    <tr>
+      <td align="right">商品名</td>
+      <td>
+        <input type="text" name="item_name" required>
+      </td>
 
-    <label for="shop_name">店名</label>
-    <input type="text" id="shop_name" name="shop_name" class="input" required>
+      <td align="right">店名</td>
+      <td>
+        <input type="text" name="shop_name" required>
+      </td>
 
-    <label for="price">金額（円）</label>
-    <input type="number" id="price" name="price" class="input" required>
+      <td align="right">金額（円）</td>
+      <td>
+        <input type="number" name="price" required>
+      </td>
+    </tr>
 
-    <button type="submit" class="btn primary">
-      登録する
-    </button>
+    <tr>
+      <td colspan="6" align="center">
+        <button type="submit">登録する</button>
+      </td>
+    </tr>
+  </table>
 
-  </form>
+</form>
+
+<br>
+
+<div align="center">
+  <a href="/dashboard" class="btn">← ダッシュボードへ戻る</a>
 </div>
-
-<a href="/dashboard" class="btn">← ダッシュボードへ戻る</a>
 
 {% endblock %}
